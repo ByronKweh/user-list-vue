@@ -1,20 +1,27 @@
 <template>
-  <div class="user-list">
-    <h1>User List</h1>
-    <button class="refresh-button" @click="fetchUsers">
-      {{ hasLoaded ? 'Refresh List' : 'Load List' }}
-    </button>
-    <ul class="user-list-items">
-      <li
-        v-for="user in users"
-        :key="user.login.uuid"
-        class="user-list-item"
-        @click="showDetails(user)"
-      >
-        {{ user.name.first }} {{ user.name.last }}
-      </li>
-    </ul>
-    <user-details v-if="selectedUser" :user="selectedUser" @close="closeDetails" />
+  <div class="content-container">
+    <div class="content-header">
+      <div class="header-overlay"></div>
+      <div class="header-background"></div>
+    </div>
+    <div class="user-list">
+      <h1>User List</h1>
+      <button class="refresh-button" @click="fetchUsers">
+        {{ hasLoaded ? 'Refresh List' : 'Load List' }}
+      </button>
+      <div v-if="loading">Loading...</div>
+      <ul v-if="!loading" class="user-list-items">
+        <li
+          v-for="user in users"
+          :key="user.login.uuid"
+          class="user-list-item"
+          @click="showDetails(user)"
+        >
+          {{ user.name.first }} {{ user.name.last }}
+        </li>
+      </ul>
+      <user-details v-if="selectedUser" :user="selectedUser" @close="closeDetails" />
+    </div>
   </div>
 </template>
 
@@ -41,11 +48,14 @@ export default defineComponent({
   setup() {
     const users = ref<User[]>([])
     const selectedUser = ref<User | null>(null)
+    const loading = ref(false)
     const hasLoaded = ref(false)
 
     async function fetchUsers() {
-      const response = await axios.get('https://randomuser.me/api/?results=20')
+      loading.value = true
+      const response = await axios.get('https://randomuser.me/api/?results=7')
       users.value = response.data.results
+      loading.value = false
       hasLoaded.value = true
     }
 
@@ -60,6 +70,7 @@ export default defineComponent({
     return {
       users,
       selectedUser,
+      loading,
       hasLoaded,
       fetchUsers,
       showDetails,
@@ -70,12 +81,25 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.content-container {
+  display: flex;
+  flex-direction: column;
+}
 .user-list {
   max-width: 600px;
   margin: 0 auto;
   padding: 20px;
 }
 
+.content-header {
+  background-color: white;
+  height: 100px;
+  border: 1;
+  width: 100%;
+}
+.header-background {
+  background-color: white;
+}
 .refresh-button {
   background-color: #4caf50;
   border: none;
